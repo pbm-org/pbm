@@ -1,9 +1,11 @@
 version: v0.0.1
 deps:
   - repo: "https://github.com/google/common-protos.git"
-    rev: "master"
+    ref: "master"
   - repo: "git@github.com:my-org/base-proto.git"
-    rev: "v1.0.2"
+    ref: "v1.0.2"
+  - dir: "local/dir1"
+  - dir: "local1/dir2"
 gen:
   - language: "go"
     out: "."
