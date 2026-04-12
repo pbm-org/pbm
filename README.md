@@ -56,5 +56,5 @@ lint:
 
 ## Depend
 
-[protoc](https://github.com/protocolbuffers/protobuf)
+[protoc](https://github.com/protocolbuffers/protobuf)  
 [protolint](https://github.com/yoheimuta/protolint)
