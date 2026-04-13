@@ -1,34 +1,34 @@
-# Pbb
+# Pbm ProtoBuf Manage
 
-Protobuf Build system for multi remote git repo
+Protobuf Manage for multi remote git repo
 
 ## How to use
 
-init pbb project
+init pbm project
 
 ```
-pbb init
+pbm init
 ```
 
 build proto protobuf
 
 ```
-pbb gen
+pbm gen
 ```
 
 update dep buf latest
 
 ```
-pbb dep
+pbm dep
 ```
 
-clean pbb dep
+clean pbm dep
 
 ```
-pbb clean
+pbm clean
 ```
 
-`pbb.yaml`
+`pbm.yaml`
 
 ```
 version: v0.0.1
@@ -46,7 +46,7 @@ gen:
     out: "./gen_dart"
 input:
   - proto/proto1.proto
-  - git@github.com:labulakalia/pbb.git
+  - git@github.com:labulakalia/pbm.git
   - proto_dir
 lint:
   - opt:
