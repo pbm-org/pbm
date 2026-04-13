@@ -1,0 +1,21 @@
+version: v1
+deps:
+  - path: https://github.com/pbm-org/pbm.git
+    ref: main
+  - path: git@github.com:pbm-org/pbm.git
+    ref: v0.0.1
+  - path: proto1/pbm.proto
+  - path: proto2/pbm.proto
+gen:
+  - plugin: go
+    out: .
+    opt:
+      - paths=source_relative
+  - plugin: dart
+    out: ./gen_dart
+input:
+  - path: proto/proto1.proto
+  - path: git@github.com:labulakalia/pbb.git
+    dir: proto
+    file: proto/proto2.proto
+  - path: proto_dir
