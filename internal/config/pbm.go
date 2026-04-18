@@ -1,6 +1,8 @@
 package config
 
 import (
+	"fmt"
+	"io"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -19,19 +21,33 @@ type Gen struct {
 	Opt    []string `yaml:"opt"`
 }
 
+type PbPath struct {
+	Local string `yaml:"local"`
+
+	Remote string `yaml:"remote"`
+	Ref    string `yaml:"ref"`
+	File   string `yaml:"file"`
+}
+
 type Input struct {
-	Path string `yaml:"path"`
-	Dir  string `yaml:"dir"`
-	File string `yaml:"file"`
+	PbPath  `yaml:",inline"`
+	DescOut string `yaml:"desc_out"`
 }
 
 type Dep struct {
-	Path string `yaml:"path"`
-	Ref  string `yaml:"ref"`
+	PbPath `yaml:",inline"`
 }
 
 func PbmConfigFromFile(path string) (*PbmConfig, error) {
-	configBytes, err := os.ReadFile(path)
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	return PbmConfigFromReader(file)
+}
+
+func PbmConfigFromReader(reader io.Reader) (*PbmConfig, error) {
+	configBytes, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
 	}
@@ -43,5 +59,33 @@ func PbmConfigFromFile(path string) (*PbmConfig, error) {
 	if err := yaml.Unmarshal(configBytes, &config); err != nil {
 		return nil, err
 	}
+	if len(config.Input) == 0 || len(config.Gen) == 0 {
+		return nil, fmt.Errorf("input or gen is invalid")
+	}
 	return &config, nil
+}
+
+func InitConfig() error {
+	_, err := os.Stat("pbm.yaml")
+	if err == nil {
+		return fmt.Errorf("pbm.yaml already exist")
+	}
+	examplePbmConfig := `version: v1
+deps:
+  - path: https://github.com/pbm-org/pbm.git
+    ref: main
+  - path: git@github.com:pbm-org/pbm.git
+    ref: v0.0.1
+  - path: proto1/pbm.proto
+gen:
+  - plugin: go
+    out: .
+    opt:
+      - paths=source_relative
+input:
+  - path: proto/proto1.proto
+    desc_out: ./xxx/xxx
+`
+	err = os.WriteFile("pbm.yaml", []byte(examplePbmConfig), 0755)
+	return err
 }

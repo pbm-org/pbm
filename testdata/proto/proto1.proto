@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package testdata;
+
+option go_package = "github.com/pbm-org/pbm/testdata/proto";
+
+import "plugin/plugin.proto";
+
+message TestProto {
+    plugin.AuthMethod auth_method = 1;
+}

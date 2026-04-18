@@ -2,11 +2,34 @@ package config
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 )
 
 func TestConfig(t *testing.T) {
-	pbmConfig, err := PbmConfigFromFile("../../pbm.yaml")
+	pbmConfigStr := `version: v1
+deps:
+  - remote: https://github.com/pbm-org/pbm.git
+    ref: main
+  - remote: git@github.com:pbm-org/pbm.git
+    ref: v0.0.1
+  - local: proto1/pbm.proto
+  - local: proto2/pbm.proto
+gen:
+  - plugin: go
+    out: .
+    opt:
+      - paths=source_relative
+  - plugin: dart
+    out: ./gen_dart
+input:
+  - local: proto/proto1.proto
+    desc_out: ./xxx/xxx
+  - remote: git@github.com:labulakalia/pbb.git
+    file: proto/proto.proto
+  - local: proto_dir
+`
+	pbmConfig, err := PbmConfigFromReader(strings.NewReader(pbmConfigStr))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -14,22 +37,31 @@ func TestConfig(t *testing.T) {
 		t.Errorf("expected version %s, got %s", "", pbmConfig.Version)
 	}
 	deps := []Dep{{
-		Path: "https://github.com/pbm-org/pbm.git",
-		Ref:  "main",
+		PbPath: PbPath{
+			Remote: "https://github.com/pbm-org/pbm.git",
+			Ref:    "main",
+		},
 	},
 		{
-			Path: "git@github.com:pbm-org/pbm.git",
-			Ref:  "v0.0.1",
+			PbPath: PbPath{
+				Remote: "git@github.com:pbm-org/pbm.git",
+				Ref:    "v0.0.1",
+			},
 		},
 		{
-			Path: "proto1/pbm.proto",
+			PbPath: PbPath{
+				Local: "proto1/pbm.proto",
+			},
 		},
 		{
-			Path: "proto2/pbm.proto",
+			PbPath: PbPath{
+				Local: "proto2/pbm.proto",
+			},
 		}}
 	if !reflect.DeepEqual(pbmConfig.Deps, deps) {
 		t.Errorf("expected deps %v, got %v", deps, pbmConfig.Deps)
 	}
+
 	gens := []Gen{
 		{
 			Plugin: "go",
@@ -46,18 +78,20 @@ func TestConfig(t *testing.T) {
 	}
 	input := []Input{
 		{
-			Path: "proto/proto1.proto",
+			PbPath: PbPath{
+				Local: "proto/proto1.proto",
+			},
 		},
 		{
-			Path: "git@github.com:labulakalia/pbb.git",
-			Dir:  "proto",
-			File: "proto/proto2.proto",
+			PbPath: PbPath{Remote: "git@github.com:labulakalia/pbb.git", File: "proto/proto.proto"},
 		},
 		{
-			Path: "proto_dir",
+			PbPath: PbPath{
+				Local: "proto_dir",
+			},
 		},
 	}
 	if !reflect.DeepEqual(pbmConfig.Input, input) {
-		t.Errorf("expected input %v, got %v", input, pbmConfig.Input)
+		t.Errorf("expected input \n%+v, got \n%+v", input, pbmConfig.Input)
 	}
 }

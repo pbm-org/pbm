@@ -19,7 +19,7 @@ pbm gen
 update dep buf latest
 
 ```
-pbm dep
+pbm update
 ```
 
 clean pbm dep
@@ -31,36 +31,26 @@ pbm clean
 `pbm.yaml`
 
 ```
-version: v0.0.1
+version: v1
 deps:
-  - repo: "https://github.com/google/common-protos.git"
-    rev: "master"
-  - repo: "git@github.com:my-org/base-proto.git"
-    rev: "v1.0.2"
+  - remote: https://cnb.cool/medianexapp/plugin_api
+    ref: main
 gen:
-  - language: "go"
-    out: "."
+  - plugin: go
+    out: .
     opt:
       - paths=source_relative
-  - language: "dart"
-    out: "./gen_dart"
 input:
-  - proto/proto1.proto
-  - git@github.com:labulakalia/pbm.git
-  - proto_dir
-lint:
-  - opt:
-    - a=a
-    - b=b
+  - local: testdata/proto/proto1.proto
+    desc_out: testdata/proto/proto1.pb
 ```
 
-## DEV
+## WIP
 
-- [ ] Builder
+- [x] Builder
 - [ ] Lint
 - [ ] Break
 
 ## Depend
 
-[protoc](https://github.com/protocolbuffers/protobuf)  
-[protolint](https://github.com/yoheimuta/protolint)
+[protoc](https://github.com/protocolbuffers/protobuf)
