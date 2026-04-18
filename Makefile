@@ -13,6 +13,6 @@ $(PLATFORMS):
 	$(eval ARCH := $(word 2,$(subst -, ,$@)))
 	@echo "Build $(OS) $(ARCH)..."
 	GOOS=$(OS) GOARCH=$(ARCH) go build -x -o $(BUILD_DIR)/$(BINARY_NAME)-$(OS)-$(ARCH)$(if $(findstring windows,$(OS)),.exe,) $(BUILD_FILE)
-
+	
 clean:
 	@rm -rf $(BUILD_DIR)

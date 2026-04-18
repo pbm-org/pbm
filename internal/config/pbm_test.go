@@ -81,6 +81,7 @@ input:
 			PbPath: PbPath{
 				Local: "proto/proto1.proto",
 			},
+			DescOut: "./xxx/xxx",
 		},
 		{
 			PbPath: PbPath{Remote: "git@github.com:labulakalia/pbb.git", File: "proto/proto.proto"},
