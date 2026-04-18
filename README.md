@@ -2,39 +2,45 @@
 
 Protobuf Manage for multi remote git repo
 
+# Install
+
+[Download](https://github.com/pbm-org/pbm/releases/tag/v0.0.1)
+
 ## How to use
 
 init pbm project
 
 ```
-pbm init
+pbm -init
 ```
 
 build proto protobuf
 
 ```
-pbm gen
+pbm -build
 ```
 
 update dep buf latest
 
 ```
-pbm update
+pbm -update
 ```
 
 clean pbm dep
 
 ```
-pbm clean
+pbm -clean
 ```
 
-`pbm.yaml`
+example pbm.yaml
 
 ```
 version: v1
 deps:
   - remote: https://cnb.cool/medianexapp/plugin_api
     ref: main
+  - remote: https://github.com/googleapis/googleapis
+    ref: master
 gen:
   - plugin: go
     out: .
@@ -50,6 +56,7 @@ input:
 - [x] Builder
 - [ ] Lint
 - [ ] Break
+- [ ] Protobuf Lsp
 
 ## Depend
 
