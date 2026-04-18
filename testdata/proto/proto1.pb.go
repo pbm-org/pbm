@@ -7,6 +7,7 @@
 package proto
 
 import (
+	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	plugin "github.com/medianexapp/plugin_api/plugin"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -160,14 +161,14 @@ var File_testdata_proto_proto1_proto protoreflect.FileDescriptor
 
 const file_testdata_proto_proto1_proto_rawDesc = "" +
 	"\n" +
-	"\x1btestdata/proto/proto1.proto\x12\btestdata\x1a\x13plugin/plugin.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x19google/protobuf/any.proto\"@\n" +
-	"\tTestProto\x123\n" +
-	"\vauth_method\x18\x01 \x01(\v2\x12.plugin.AuthMethodR\n" +
-	"authMethod\"I\n" +
-	"\rTestTimeStamp\x128\n" +
-	"\ttimestamp\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\"1\n" +
-	"\aTestAny\x12&\n" +
-	"\x03any\x18\x01 \x01(\v2\x14.google.protobuf.AnyR\x03anyB'Z%github.com/pbm-org/pbm/testdata/protob\x06proto3"
+	"\x1btestdata/proto/proto1.proto\x12\btestdata\x1a\x13plugin/plugin.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x19google/protobuf/any.proto\x1a\x17validate/validate.proto\"J\n" +
+	"\tTestProto\x12=\n" +
+	"\vauth_method\x18\x01 \x01(\v2\x12.plugin.AuthMethodB\b\xfaB\x05\x8a\x01\x02\x10\x01R\n" +
+	"authMethod\"S\n" +
+	"\rTestTimeStamp\x12B\n" +
+	"\ttimestamp\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampB\b\xfaB\x05\xb2\x01\x02\b\x01R\ttimestamp\";\n" +
+	"\aTestAny\x120\n" +
+	"\x03any\x18\x01 \x01(\v2\x14.google.protobuf.AnyB\b\xfaB\x05\xa2\x01\x02\b\x01R\x03anyB'Z%github.com/pbm-org/pbm/testdata/protob\x06proto3"
 
 var (
 	file_testdata_proto_proto1_proto_rawDescOnce sync.Once

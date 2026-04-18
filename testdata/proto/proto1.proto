@@ -7,15 +7,16 @@ option go_package = "github.com/pbm-org/pbm/testdata/proto";
 import "plugin/plugin.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
+import "validate/validate.proto";
 
 message TestProto {
-    plugin.AuthMethod auth_method = 1;
+    plugin.AuthMethod auth_method = 1 [(validate.rules).message.required = true];
 }
 
 message TestTimeStamp {
-    google.protobuf.Timestamp timestamp = 1;
+    google.protobuf.Timestamp timestamp = 1 [(validate.rules).timestamp.required = true];
 }
 
 message TestAny {
-    google.protobuf.Any any = 1;
+    google.protobuf.Any any = 1 [(validate.rules).any.required = true];
 }

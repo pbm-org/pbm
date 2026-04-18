@@ -4,8 +4,14 @@ deps:
     ref: main
   - remote: https://github.com/googleapis/googleapis
     ref: master
+  - remote: https://github.com/bufbuild/protoc-gen-validate
+    ref: main
 gen:
   - plugin: go
+    out: .
+    opt:
+      - paths=source_relative
+  - plugin: validate-go
     out: .
     opt:
       - paths=source_relative

@@ -19,6 +19,7 @@ jobs:
         run: |
           go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
           go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+          go install github.com/envoyproxy/protoc-gen-validate/cmd/protoc-gen-validate-go@latest
           # Ensure Go bin is in PATH (setup-go usually handles this)
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
           sudo apt-get update
