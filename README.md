@@ -2,6 +2,9 @@
 
 Protobuf Manage for multi remote git repo
 
+[![Release](https://github.com/pbm-org/pbm/actions/workflows/release.yml/badge.svg)](https://github.com/pbm-org/pbm/actions/workflows/release.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/pbm-org/pbm)](https://goreportcard.com/report/github.com/pbm-org/pbm)
+
 # Install
 
 [Download](https://github.com/pbm-org/pbm/releases/tag/v0.0.1)
