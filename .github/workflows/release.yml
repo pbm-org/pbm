@@ -2,6 +2,7 @@ name: Release
 
 on:
   push:
+    branches: ["main"]
     tags: "*"
 
 jobs:
@@ -13,8 +14,14 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: "1.25"
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v3
+      - name: Install Dep
+        run: |
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+          # Ensure Go bin is in PATH (setup-go usually handles this)
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
       - name: Test
         run: go test -v ./...
 
@@ -23,6 +30,7 @@ jobs:
 
       - name: Release
         uses: softprops/action-gh-release@v3
+        if: github.ref_type == 'tag'
         with:
           working_directory: build
           files: |
