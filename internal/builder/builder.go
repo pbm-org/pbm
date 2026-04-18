@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -127,8 +128,8 @@ func PbBuildCmd(pbmCfg *config.PbmConfig) ([]string, error) {
 			cmd = fmt.Sprintf(" --descriptor_set_out=%s --include_imports --include_source_info", input.DescOut)
 		}
 		cmd += " " + depPath
+		slog.Debug("build proto", "file", depPath)
 		cmds = append(cmds, b.String()+cmd)
-
 	}
 	return cmds, nil
 }
@@ -136,6 +137,7 @@ func PbBuildCmd(pbmCfg *config.PbmConfig) ([]string, error) {
 func PbmCmd(cmds []string) error {
 	g := errgroup.Group{}
 	for _, cmd := range cmds {
+		slog.Debug("run pbbuild cmd", "cmd", cmd)
 		g.Go(func() error {
 			fields := strings.Fields(cmd)
 			buf := &bytes.Buffer{}
@@ -149,5 +151,6 @@ func PbmCmd(cmds []string) error {
 			return nil
 		})
 	}
-	return g.Wait()
+	err := g.Wait()
+	return err
 }

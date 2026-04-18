@@ -49,6 +49,7 @@ func CloneDepPath(dep config.PbPath) (err error) {
 	depDir := GetDepDir(dep)
 	_, err = os.Stat(depDir)
 	if err == nil {
+		slog.Debug("dep already exist", "remote", dep.Remote, "ref", dep.Ref)
 		return nil
 	}
 	err = os.MkdirAll(depDir, 0755)
@@ -64,30 +65,36 @@ func CloneDepPath(dep config.PbPath) (err error) {
 			os.RemoveAll(rePath)
 		}
 	}()
-	cmdParams := []string{"clone", "--depth", "1"}
+	cmdParams := []string{"git", "clone", "--depth", "1"}
 	if dep.Ref != "" {
 		cmdParams = append(cmdParams, "--branch", dep.Ref)
 	}
 	cmdParams = append(cmdParams, dep.Remote, depDir)
-	slog.Info("start clone dep", "cmd", cmdParams)
-	cmd := exec.Command("git", cmdParams...)
+	slog.Debug("clone dep", "cmd", cmdParams)
+	cmd := exec.Command(cmdParams[0], cmdParams[1:]...)
 	buf := &bytes.Buffer{}
 	cmd.Stderr = buf
 	err = cmd.Run()
 	if err != nil {
-		cmd := exec.Command("git", "clone", dep.Remote, depDir)
+		slog.Error("clone failed", "err", buf.String())
 		buf.Reset()
+		cmdParams := []string{"git", "clone", dep.Remote, depDir}
+		slog.Debug("clone dep", "cmd", cmdParams)
+		cmd := exec.Command(cmdParams[0], cmdParams[1:]...)
 		cmd.Stderr = buf
 		err = cmd.Run()
 		if err != nil {
-			return fmt.Errorf("clone failed %s %s", err, buf.String())
+			return errors.New(buf.String())
 		}
 		if dep.Ref != "" {
+			slog.Debug("switch current dir", "dir", depDir)
 			err = os.Chdir(depDir)
 			if err != nil {
 				return err
 			}
-			cmd = exec.Command("git", "checkout", dep.Ref)
+			cmdParams := []string{"git", "checkout", dep.Ref}
+			slog.Debug("clone dep", "cmd", cmdParams)
+			cmd = exec.Command(cmdParams[0], cmdParams[1:]...)
 			cmd.Stderr = buf
 			err = cmd.Run()
 			if err != nil {
@@ -95,7 +102,7 @@ func CloneDepPath(dep config.PbPath) (err error) {
 			}
 		}
 	}
-	slog.Debug("clone %s %s success", dep.Remote, dep.Ref)
+	slog.Debug("clone success", "path", depDir)
 	return nil
 
 }

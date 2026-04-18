@@ -2,6 +2,8 @@ version: v1
 deps:
   - remote: https://cnb.cool/medianexapp/plugin_api
     ref: main
+  - remote: https://github.com/googleapis/googleapis
+    ref: master
 gen:
   - plugin: go
     out: .

@@ -5,7 +5,17 @@ package testdata;
 option go_package = "github.com/pbm-org/pbm/testdata/proto";
 
 import "plugin/plugin.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
 
 message TestProto {
     plugin.AuthMethod auth_method = 1;
+}
+
+message TestTimeStamp {
+    google.protobuf.Timestamp timestamp = 1;
+}
+
+message TestAny {
+    google.protobuf.Any any = 1;
 }

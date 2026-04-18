@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/pbm-org/pbm/internal/builder"
@@ -14,39 +15,42 @@ func main() {
 	build := flag.Bool("build", false, "build protobuf file")
 	update := flag.Bool("update", false, "update remote dep proto file")
 	clean := flag.Bool("clean", false, "clean remote cache dep proto file")
+	v := flag.Bool("v", false, "show debug output")
 	flag.Parse()
-	if len(flag.Args()) == 0 {
+
+	if len(os.Args) == 1 {
 		flag.Usage()
-		os.Exit(0)
+		return
+	}
+	if *v {
+		slog.SetLogLoggerLevel(slog.LevelDebug)
 	}
 	if *init {
 		err := config.InitConfig()
 		if err != nil {
-			fmt.Println("init failed", err)
-			os.Exit(1)
+			fmt.Println(err)
+			return
 		}
 	} else {
-
 		pbmCfg, err := config.PbmConfigFromFile("pbm.yaml")
 		if err != nil {
 			fmt.Println("read pbm.yaml failed", err)
-			os.Exit(1)
+			return
 		}
 		if *build {
 			err = builder.CheckPbCfg(pbmCfg)
 			if err != nil {
 				fmt.Println(err)
-				os.Exit(1)
 			}
 			cmds, err := builder.PbBuildCmd(pbmCfg)
 			if err != nil {
 				fmt.Println(err)
-				os.Exit(1)
+				return
 			}
 			err = builder.PbmCmd(cmds)
 			if err != nil {
 				fmt.Println(err)
-				os.Exit(1)
+				return
 			}
 		}
 		if *update {
