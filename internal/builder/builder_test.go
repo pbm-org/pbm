@@ -1,69 +1,35 @@
 package builder
 
 import (
-	"fmt"
+	"log/slog"
 	"os"
-	"os/exec"
-	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/pbm-org/pbm/internal/config"
 )
 
-func TestBuilder(t *testing.T) {
+func TestBuildProto(t *testing.T) {
+	slog.SetLogLoggerLevel(slog.LevelDebug)
 	pbmConfigStr := `version: v1
 deps:
   - remote: https://cnb.cool/medianexapp/plugin_api
     ref: main
-  - remote: git@github.com:pbm-org/pbm.git
-    ref: v0.0.1
-  - local: proto1
-  - local: proto2
+  - remote: https://github.com/googleapis/googleapis
+    ref: master
+  - remote: https://github.com/bufbuild/protoc-gen-validate
+    ref: main
 gen:
-  - plugin: go
+  - plugin: go-lite
     out: .
     opt:
       - paths=source_relative
-  - plugin: dart
-    out: ./gen_dart
-input:
-  - local: proto/proto1.proto
-    desc_out: ./xxx/xxx.proto
-  - remote: git@github.com:labulakalia/pbb.git
-    ref: main
-    file: proto/*.proto
-  - local: proto_dir/*.proto
-`
-	pbmConfig, err := config.PbmConfigFromReader(strings.NewReader(pbmConfigStr))
-	if err != nil {
-		t.Fatal(err)
-	}
-	cmds, err := PbBuildCmd(pbmConfig)
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, cmd := range cmds {
-		fmt.Println(cmd)
-	}
-}
-
-func TestGolb(t *testing.T) {
-	fmt.Println(filepath.Glob("wde*dwe/builder.go"))
-}
-
-func TestBuildProto(t *testing.T) {
-	pbmConfigStr := `version: v1
-deps:
-  - remote: https://cnb.cool/medianexapp/plugin_api
-    ref: main
-gen:
-  - plugin: go
+  - plugin: validate-go
     out: .
-    opt: 
+    opt:
       - paths=source_relative
 input:
-  - local: testdata/proto/proto1.proto
+  - local: testdata/proto
     desc_out: testdata/proto/proto1.pb
 `
 	os.Chdir("../../")
@@ -83,10 +49,7 @@ input:
 	if len(cmds) == 0 {
 		t.Fatal("cmds is 0")
 	}
-	fields := strings.Fields(cmds[0])
-
-	cmd := exec.Command(fields[0], fields[1:]...)
-	_, err = cmd.CombinedOutput()
+	err = RunPbmCmd(cmds)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,10 +57,19 @@ input:
 	if err != nil {
 		t.Fatal(err)
 	}
-	os.Remove("testdata/proto/proto1.pb")
 	_, err = os.Stat("testdata/proto/proto1.pb.go")
 	if err != nil {
 		t.Fatal(err)
 	}
+	_, err = os.Stat("testdata/proto/proto1.pb.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = os.Stat("testdata/proto/proto1.pb.validate.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.Remove("testdata/proto/proto1.pb")
 	os.Remove("testdata/proto/proto1.pb.go")
+	os.Remove("testdata/proto/proto1.pb.validate.go")
 }

@@ -2,13 +2,16 @@ package builder
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/pbm-org/pbm/internal/config"
 	"github.com/pbm-org/pbm/internal/deps"
@@ -43,6 +46,18 @@ func CheckPbCfg(pbmCfg *config.PbmConfig) error {
 	}
 	depPaths := []config.PbPath{}
 	for _, dep := range pbmCfg.Deps {
+		if dep.Remote == "" && dep.Local == "" {
+			return fmt.Errorf("dep config is invalid")
+		}
+		if dep.Local != "" {
+			stat, err := os.Stat(dep.Local)
+			if err != nil {
+				return err
+			}
+			if !stat.IsDir() {
+				return fmt.Errorf("dep local must be dir")
+			}
+		}
 		depPaths = append(depPaths, dep.PbPath)
 	}
 
@@ -54,17 +69,17 @@ func CheckPbCfg(pbmCfg *config.PbmConfig) error {
 				return err
 			}
 		}
+		if input.Remote == "" && input.Local == "" {
+			continue
+		}
 		depPaths = append(depPaths, input.PbPath)
 	}
 
 	for _, depPath := range depPaths {
 		if depPath.Local != "" {
-			match, err := filepath.Glob(depPath.Local)
+			_, err := os.Stat(depPath.Local)
 			if err != nil {
 				return err
-			}
-			if len(match) == 0 {
-				return fmt.Errorf("%s not match proto file", depPath.Local)
 			}
 		} else if depPath.Remote != "" {
 			err := deps.CloneDepPath(depPath)
@@ -93,15 +108,26 @@ func PbBuildCmd(pbmCfg *config.PbmConfig) ([]string, error) {
 			depPath = deps.GetDepDir(dep.PbPath)
 		} else {
 			depPath = dep.Local
+			stat, err := os.Stat(depPath)
+			if err != nil {
+				return nil, err
+			}
+			if !stat.IsDir() {
+				return nil, fmt.Errorf("dependency %s is not a directory", depPath)
+			}
 		}
 		fmt.Fprintf(b, "-I %s ", depPath)
-		// fmt.Fprintf(b, " \\ \n")
 	}
 	for _, input := range pbmCfg.Input {
 		if input.Remote != "" {
 			depPath := deps.GetDepDir(input.PbPath)
 			fmt.Fprintf(b, "-I %s ", depPath)
 		} else {
+			depPath := input.Local
+			_, err := os.Stat(depPath)
+			if err != nil {
+				return nil, err
+			}
 			fmt.Fprintf(b, "-I . ")
 		}
 	}
@@ -123,6 +149,31 @@ func PbBuildCmd(pbmCfg *config.PbmConfig) ([]string, error) {
 			depPath = filepath.Join(depPath, input.File)
 		} else {
 			depPath = input.Local
+			stat, err := os.Stat(input.Local)
+			if err != nil {
+				return nil, err
+			}
+			if stat.IsDir() {
+				protoFiles := []string{}
+				filepath.Walk(input.Local, func(path string, info fs.FileInfo, err error) error {
+					if err != nil {
+						return err
+					}
+					if info.IsDir() {
+						return nil
+					}
+					if strings.HasSuffix(path, ".proto") {
+						protoFiles = append(protoFiles, path)
+					}
+
+					return nil
+				})
+				depPath = strings.Join(protoFiles, " ")
+			} else {
+				if !strings.HasSuffix(depPath, ".proto") {
+					return nil, fmt.Errorf("valid proto file")
+				}
+			}
 		}
 		if input.DescOut != "" {
 			cmd = fmt.Sprintf(" --descriptor_set_out=%s --include_imports --include_source_info", input.DescOut)
@@ -134,14 +185,17 @@ func PbBuildCmd(pbmCfg *config.PbmConfig) ([]string, error) {
 	return cmds, nil
 }
 
-func PbmCmd(cmds []string) error {
+func RunPbmCmd(cmds []string) error {
 	g := errgroup.Group{}
 	for _, cmd := range cmds {
 		slog.Debug("run pbbuild cmd", "cmd", cmd)
 		g.Go(func() error {
 			fields := strings.Fields(cmd)
 			buf := &bytes.Buffer{}
-			cmd := exec.Command(fields[0], fields[1:]...)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+			defer cancel()
+
+			cmd := exec.CommandContext(ctx, fields[0], fields[1:]...)
 			cmd.Stdout = buf
 			cmd.Stderr = buf
 			err := cmd.Run()

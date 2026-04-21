@@ -2,6 +2,7 @@ package deps
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -9,6 +10,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
+	"time"
 
 	"github.com/pbm-org/pbm/internal/config"
 )
@@ -47,12 +50,13 @@ func GetDepDir(dep config.PbPath) string {
 
 func CloneDepPath(dep config.PbPath) (err error) {
 	depDir := GetDepDir(dep)
-	_, err = os.Stat(depDir)
-	if err == nil {
+	dirs, err := os.ReadDir(depDir)
+
+	if err == nil && len(dirs) > 0 {
 		slog.Debug("dep already exist", "remote", dep.Remote, "ref", dep.Ref)
 		return nil
 	}
-	err = os.MkdirAll(depDir, 0755)
+	err = os.MkdirAll(filepath.Dir(depDir), 0755)
 	if err != nil {
 		return err
 	}
@@ -70,39 +74,33 @@ func CloneDepPath(dep config.PbPath) (err error) {
 		cmdParams = append(cmdParams, "--branch", dep.Ref)
 	}
 	cmdParams = append(cmdParams, dep.Remote, depDir)
-	slog.Debug("clone dep", "cmd", cmdParams)
-	cmd := exec.Command(cmdParams[0], cmdParams[1:]...)
-	buf := &bytes.Buffer{}
-	cmd.Stderr = buf
-	err = cmd.Run()
+	slog.Debug("clone dep", "cmd", strings.Join(cmdParams, " "))
+	err = runCmd(cmdParams)
 	if err != nil {
-		slog.Error("clone failed", "err", buf.String())
-		buf.Reset()
-		cmdParams := []string{"git", "clone", dep.Remote, depDir}
-		slog.Debug("clone dep", "cmd", cmdParams)
-		cmd := exec.Command(cmdParams[0], cmdParams[1:]...)
-		cmd.Stderr = buf
-		err = cmd.Run()
-		if err != nil {
-			return errors.New(buf.String())
-		}
-		if dep.Ref != "" {
-			slog.Debug("switch current dir", "dir", depDir)
-			err = os.Chdir(depDir)
-			if err != nil {
-				return err
-			}
-			cmdParams := []string{"git", "checkout", dep.Ref}
-			slog.Debug("clone dep", "cmd", cmdParams)
-			cmd = exec.Command(cmdParams[0], cmdParams[1:]...)
-			cmd.Stderr = buf
-			err = cmd.Run()
-			if err != nil {
-				return fmt.Errorf("clone failed %s %s", err, buf.String())
-			}
-		}
+		slog.Error("clone failed", "err", err)
+		return err
 	}
 	slog.Debug("clone success", "path", depDir)
 	return nil
 
+}
+
+func runCmd(cmdParams []string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	cmd := exec.CommandContext(ctx, cmdParams[0], cmdParams[1:]...)
+	buf := &bytes.Buffer{}
+	cmd.Stderr = buf
+	cmd.Stdout = buf
+	defer cancel()
+	cmd.Cancel = func() error {
+		err := cmd.Process.Kill()
+		return err
+	}
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println("111")
+		return fmt.Errorf("run cmd failed %s %s", err, buf.String())
+	}
+	fmt.Println("run over")
+	return nil
 }

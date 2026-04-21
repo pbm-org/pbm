@@ -7,7 +7,7 @@ deps:
   - remote: https://github.com/bufbuild/protoc-gen-validate
     ref: main
 gen:
-  - plugin: go
+  - plugin: go-lite
     out: .
     opt:
       - paths=source_relative

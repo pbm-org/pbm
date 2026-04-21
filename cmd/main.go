@@ -41,13 +41,14 @@ func main() {
 			err = builder.CheckPbCfg(pbmCfg)
 			if err != nil {
 				fmt.Println(err)
+				return
 			}
 			cmds, err := builder.PbBuildCmd(pbmCfg)
 			if err != nil {
 				fmt.Println(err)
 				return
 			}
-			err = builder.PbmCmd(cmds)
+			err = builder.RunPbmCmd(cmds)
 			if err != nil {
 				fmt.Println(err)
 				return

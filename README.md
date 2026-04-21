@@ -44,13 +44,19 @@ deps:
     ref: main
   - remote: https://github.com/googleapis/googleapis
     ref: master
+  - remote: https://github.com/bufbuild/protoc-gen-validate
+    ref: main
 gen:
-  - plugin: go
+  - plugin: go-lite
+    out: .
+    opt:
+      - paths=source_relative
+  - plugin: validate-go
     out: .
     opt:
       - paths=source_relative
 input:
-  - local: testdata/proto/proto1.proto
+  - local: testdata/proto
     desc_out: testdata/proto/proto1.pb
 ```
 

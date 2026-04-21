@@ -72,18 +72,18 @@ func InitConfig() error {
 	}
 	examplePbmConfig := `version: v1
 deps:
-  - path: https://github.com/pbm-org/pbm.git
+  - remote: https://github.com/pbm-org/pbm.git
     ref: main
-  - path: git@github.com:pbm-org/pbm.git
+  - remote: git@github.com:pbm-org/pbm.git
     ref: v0.0.1
-  - path: proto1/pbm.proto
+  - local: proto1/pbm.proto
 gen:
   - plugin: go
     out: .
     opt:
       - paths=source_relative
 input:
-  - path: proto/proto1.proto
+  - local: proto/proto1.proto
     desc_out: ./xxx/xxx
 `
 	err = os.WriteFile("pbm.yaml", []byte(examplePbmConfig), 0755)
