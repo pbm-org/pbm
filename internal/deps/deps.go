@@ -50,25 +50,15 @@ func GetDepDir(dep config.PbPath) string {
 
 func CloneDepPath(dep config.PbPath) (err error) {
 	depDir := GetDepDir(dep)
-	dirs, err := os.ReadDir(depDir)
-
-	if err == nil && len(dirs) > 0 {
-		slog.Debug("dep already exist", "remote", dep.Remote, "ref", dep.Ref)
+	_, err = os.Stat(filepath.Join(depDir, ".git", "update"))
+	if err == nil {
 		return nil
 	}
+	_ = os.RemoveAll(depDir)
 	err = os.MkdirAll(filepath.Dir(depDir), 0755)
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if err != nil {
-			rePath := depDir
-			if dep.Ref != "" {
-				rePath = filepath.Dir(rePath)
-			}
-			os.RemoveAll(rePath)
-		}
-	}()
 	cmdParams := []string{"git", "clone", "--depth", "1"}
 	if dep.Ref != "" {
 		cmdParams = append(cmdParams, "--branch", dep.Ref)
@@ -81,7 +71,7 @@ func CloneDepPath(dep config.PbPath) (err error) {
 		return err
 	}
 	slog.Debug("clone success", "path", depDir)
-	return nil
+	return os.WriteFile(filepath.Join(depDir, ".git/update"), []byte(fmt.Sprintf("%d", time.Now().Unix())), 0644)
 
 }
 
@@ -98,9 +88,7 @@ func runCmd(cmdParams []string) error {
 	}
 	err := cmd.Run()
 	if err != nil {
-		fmt.Println("111")
 		return fmt.Errorf("run cmd failed %s %s", err, buf.String())
 	}
-	fmt.Println("run over")
 	return nil
 }
