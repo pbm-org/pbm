@@ -50,7 +50,7 @@ func GetDepDir(dep config.PbPath) string {
 
 func CloneDepPath(dep config.PbPath) (err error) {
 	depDir := GetDepDir(dep)
-	_, err = os.Stat(filepath.Join(depDir, ".git", "update"))
+	_, err = os.Stat(filepath.Join(depDir, ".pbm"))
 	if err == nil {
 		return nil
 	}
@@ -71,7 +71,7 @@ func CloneDepPath(dep config.PbPath) (err error) {
 		return err
 	}
 	slog.Debug("clone success", "path", depDir)
-	return os.WriteFile(filepath.Join(depDir, ".git/update"), []byte(fmt.Sprintf("%d", time.Now().Unix())), 0644)
+	return os.WriteFile(filepath.Join(depDir, ".pbm"), fmt.Appendf(nil, "%d", time.Now().Unix()), 0644)
 
 }
 
